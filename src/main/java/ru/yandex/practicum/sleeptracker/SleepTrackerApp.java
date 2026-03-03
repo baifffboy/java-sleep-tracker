@@ -54,7 +54,10 @@ public class SleepTrackerApp {
                     Optional<Long> minutes = listOfSleepSessions.stream()
                             .map((session) -> Duration.between(session.getBeginOfSleep(), session.getEndOfSleep()).toMinutes())
                             .min(Long::compareTo);
-                    return new SleepAnalysisResult("Данная функция отображает минимальную продолжительность сессии (в минутах)", String.format("%d", minutes));
+                    return new SleepAnalysisResult(
+                            "Данная функция отображает минимальную продолжительность сессии (в минутах)",
+                            minutes.isPresent() ? String.format("%d", minutes.get()) : "-1"
+                    );
                 }
         );
 
@@ -63,7 +66,10 @@ public class SleepTrackerApp {
                     Optional<Long> minutes = listOfSleepSessions.stream()
                             .map((session) -> Duration.between(session.getBeginOfSleep(), session.getEndOfSleep()).toMinutes())
                             .max(Long::compareTo);
-                    return new SleepAnalysisResult("Данная функция отображает максимальную продолжительность сессии (в минутах)", String.format("%d", minutes));
+                    return new SleepAnalysisResult(
+                            "Данная функция отображает максимальную продолжительность сессии (в минутах)",
+                            minutes.isPresent() ? String.format("%d", minutes.get()) : "-1"
+                    );
                 }
         );
 
@@ -119,6 +125,67 @@ public class SleepTrackerApp {
                 }
         );
 
+        sleepTracker.addFunction(
+                (listOfSleepSessions) -> {
+                    Set<LocalDate> setOfOwl = listOfSleepSessions.stream()
+                            //клиент сова
+                            .filter(session ->
+                                    (session.getBeginOfSleep().isAfter(LocalDateTime.of(session.getBeginOfSleep().toLocalDate().plusDays(1), LocalTime.of(23, 0)))
+                                            && session.getEndOfSleep().isAfter(LocalDateTime.of(session.getEndOfSleep().toLocalDate(), LocalTime.of(9, 0))))
+                            )
+                            .map(session -> {
+                                if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
+                                    return session.getBeginOfSleep().toLocalDate().plusDays(1);
+                                }
+                                return session.getBeginOfSleep().toLocalDate();
+                            })
+                            .collect(Collectors.toSet());
+
+                    Set<LocalDate> setOfLark = listOfSleepSessions.stream()
+                            //клиент жаворонок
+                            .filter(session ->
+                                    (session.getBeginOfSleep().isBefore(LocalDateTime.of(session.getBeginOfSleep().toLocalDate().plusDays(1), LocalTime.of(22, 0)))
+                                            && session.getEndOfSleep().isBefore(LocalDateTime.of(session.getEndOfSleep().toLocalDate(), LocalTime.of(7, 0))))
+                            )
+                            .map(session -> {
+                                if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
+                                    return session.getBeginOfSleep().toLocalDate().plusDays(1);
+                                }
+                                return session.getBeginOfSleep().toLocalDate();
+                            })
+                            .collect(Collectors.toSet());
+
+                    Set<LocalDate> setOfPigeon = listOfSleepSessions.stream()
+                            //клиент голубь
+                            .filter(session -> {
+                                    if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
+                                         return !setOfOwl.contains(session.getBeginOfSleep().toLocalDate().plusDays(1))
+                                                 && !setOfLark.contains(session.getBeginOfSleep().toLocalDate().plusDays(1))
+                                                    && session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(21, 0))
+                                                        && session.getEndOfSleep().toLocalTime().isBefore(LocalTime.of(10, 0));
+                                    }
+                                    return !setOfOwl.contains(session.getBeginOfSleep().toLocalDate())
+                                            && !setOfLark.contains(session.getBeginOfSleep().toLocalDate())
+                                                && session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(21, 0))
+                                                    && session.getEndOfSleep().toLocalTime().isBefore(LocalTime.of(10, 0));
+                                }
+                            )
+                            .map(session -> {
+                                if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
+                                    return session.getBeginOfSleep().toLocalDate().plusDays(1);
+                                }
+                                return session.getBeginOfSleep().toLocalDate();
+                            })
+                            .collect(Collectors.toSet());
+
+                    final String type;
+                    if ((setOfOwl.size() < setOfPigeon.size() && setOfLark.size() < setOfPigeon.size()) || (setOfOwl.size() == setOfLark.size())) type = "Голубь";
+                    else if (setOfOwl.size() > setOfPigeon.size() && setOfLark.size() < setOfOwl.size()) type = "Сова";
+                    else type = "Жаворонок";
+                    return new SleepAnalysisResult("Данная функция отображает тип человека по его привычке сна (голубь, сова или жаворонок)", String.format("%s", type));
+                }
+        );
+
         sleepTracker.listOfFunctions.stream()
                 .forEach(function ->
                         sleepTracker.listOfResultAnalysisSleep.add(function.apply(sleepTracker.listOfSleepSessions)));
@@ -126,9 +193,9 @@ public class SleepTrackerApp {
         sleepTracker.listOfResultAnalysisSleep.stream()
                 .forEach(function -> {
                     if (function.getValue().isBlank())
-                        System.out.printf("Описание функции: %s", function.getDescription());
+                        System.out.printf("Описание функции:\n\"%s\"\n\n", function.getDescription());
                     else
-                        System.out.printf("Описание функции: %s, значение: %s", function.getDescription(), function.getValue());
+                        System.out.printf("Описание функции:\n\"%s\"\nЗначение:\n%s\n\n", function.getDescription(), function.getValue());
                 }
         );
 
