@@ -30,6 +30,7 @@ public class SleepTrackerApp {
                         String line;
                         while (reader.ready()) {
                             line = reader.readLine();
+                            if (line.trim().isEmpty()) continue;
                             String[] splitString = line.split(";");
                             LocalDateTime beginOfSleep = LocalDateTime.parse(splitString[0], FORMATTER);
                             LocalDateTime endOfSleep = LocalDateTime.parse(splitString[1], FORMATTER);
@@ -94,6 +95,13 @@ public class SleepTrackerApp {
 
         sleepTracker.addFunction(
                 (listOfSleepSessions) -> {
+                    if (listOfSleepSessions.isEmpty()) {
+                        return new SleepAnalysisResult(
+                                "Данная функция отображает количество бессонных ночей",
+                                "0"
+                        );
+                    }
+
                     LocalDateTime firstLogBeginOfSleep = listOfSleepSessions.getFirst().getBeginOfSleep();
                     LocalDate firstNight = firstLogBeginOfSleep.toLocalTime().isAfter(LocalTime.of(12, 0))
                             ? firstLogBeginOfSleep.toLocalDate().plusDays(1)
