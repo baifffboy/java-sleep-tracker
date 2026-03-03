@@ -5,7 +5,10 @@ import ru.yandex.practicum.sleeptracker.exception.InvalidFilePathException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -117,9 +120,9 @@ public class SleepTrackerApp {
                             // сейчас у меня будут записи когда клиент спал с 00.00 до 6.00
                             .filter(session ->
                                     (session.getBeginOfSleep().isBefore(LocalDateTime.of(session.getBeginOfSleep().toLocalDate().plusDays(1), LocalTime.of(0, 0)))
-                                    && session.getEndOfSleep().isAfter(LocalDateTime.of(session.getEndOfSleep().toLocalDate(), LocalTime.of(6, 0))))
-                                    || (session.getBeginOfSleep().isAfter(LocalDateTime.of(session.getBeginOfSleep().toLocalDate(), LocalTime.of(0, 0)))
-                                                    && session.getEndOfSleep().isBefore(LocalDateTime.of(session.getEndOfSleep().toLocalDate(), LocalTime.of(6, 0))))
+                                            && session.getEndOfSleep().isAfter(LocalDateTime.of(session.getEndOfSleep().toLocalDate(), LocalTime.of(6, 0))))
+                                            || (session.getBeginOfSleep().isAfter(LocalDateTime.of(session.getBeginOfSleep().toLocalDate(), LocalTime.of(0, 0)))
+                                            && session.getEndOfSleep().isBefore(LocalDateTime.of(session.getEndOfSleep().toLocalDate(), LocalTime.of(6, 0))))
                             )
                             .map(session -> {
                                 if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
@@ -166,17 +169,17 @@ public class SleepTrackerApp {
                     Set<LocalDate> setOfPigeon = listOfSleepSessions.stream()
                             //клиент голубь
                             .filter(session -> {
-                                    if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
-                                         return !setOfOwl.contains(session.getBeginOfSleep().toLocalDate().plusDays(1))
-                                                 && !setOfLark.contains(session.getBeginOfSleep().toLocalDate().plusDays(1))
+                                        if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
+                                            return !setOfOwl.contains(session.getBeginOfSleep().toLocalDate().plusDays(1))
+                                                    && !setOfLark.contains(session.getBeginOfSleep().toLocalDate().plusDays(1))
                                                     && session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(21, 0))
-                                                        && session.getEndOfSleep().toLocalTime().isBefore(LocalTime.of(10, 0));
-                                    }
-                                    return !setOfOwl.contains(session.getBeginOfSleep().toLocalDate())
-                                            && !setOfLark.contains(session.getBeginOfSleep().toLocalDate())
-                                                && session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(21, 0))
                                                     && session.getEndOfSleep().toLocalTime().isBefore(LocalTime.of(10, 0));
-                                }
+                                        }
+                                        return !setOfOwl.contains(session.getBeginOfSleep().toLocalDate())
+                                                && !setOfLark.contains(session.getBeginOfSleep().toLocalDate())
+                                                && session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(21, 0))
+                                                && session.getEndOfSleep().toLocalTime().isBefore(LocalTime.of(10, 0));
+                                    }
                             )
                             .map(session -> {
                                 if (session.getBeginOfSleep().toLocalTime().isAfter(LocalTime.of(12, 0))) {
@@ -187,7 +190,8 @@ public class SleepTrackerApp {
                             .collect(Collectors.toSet());
 
                     final String type;
-                    if ((setOfOwl.size() < setOfPigeon.size() && setOfLark.size() < setOfPigeon.size()) || (setOfOwl.size() == setOfLark.size())) type = "Голубь";
+                    if ((setOfOwl.size() < setOfPigeon.size() && setOfLark.size() < setOfPigeon.size()) || (setOfOwl.size() == setOfLark.size()))
+                        type = "Голубь";
                     else if (setOfOwl.size() > setOfPigeon.size() && setOfLark.size() < setOfOwl.size()) type = "Сова";
                     else type = "Жаворонок";
                     return new SleepAnalysisResult("Данная функция отображает тип человека по его привычке сна (голубь, сова или жаворонок)", String.format("%s", type));
@@ -200,12 +204,12 @@ public class SleepTrackerApp {
 
         sleepTracker.listOfResultAnalysisSleep.stream()
                 .forEach(function -> {
-                    if (function.getValue().isBlank())
-                        System.out.printf("Описание функции:\n\"%s\"\n\n", function.getDescription());
-                    else
-                        System.out.printf("Описание функции:\n\"%s\"\nЗначение:\n%s\n\n", function.getDescription(), function.getValue());
-                }
-        );
+                            if (function.getValue().isBlank())
+                                System.out.printf("Описание функции:\n\"%s\"\n\n", function.getDescription());
+                            else
+                                System.out.printf("Описание функции:\n\"%s\"\nЗначение:\n%s\n\n", function.getDescription(), function.getValue());
+                        }
+                );
 
     }
 

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.sleeptracker;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.yandex.practicum.sleeptracker.exception.InvalidFilePathException;
 
