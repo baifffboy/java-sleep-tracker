@@ -7,6 +7,7 @@ import ru.yandex.practicum.sleeptracker.exception.InvalidFilePathException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,23 +42,20 @@ class SleepTrackerAppTest {
 
     @Test
     void testFileLoading_FileNotFound() {
-        String[] args = {"nonexistent.txt"};
-        Exception exception = assertThrows(RuntimeException.class,
-                () -> SleepTrackerApp.main(args));
+        SleepTrackerApp testApp = new SleepTrackerApp();
+        testApp.addFunction(new FileOpenAndUpload("Тест", "nonexistent_file.txt")::apply);
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            testApp.getListOfFunctions().get(0).apply(new ArrayList<>());
+        });
         assertTrue(exception.getCause() instanceof InvalidFilePathException);
+        assertTrue(exception.getCause().getMessage().contains("Не удалось открыть файл"));
     }
 
     @Test
     void testFileLoading_NoArgument() {
-        String[] args = {};
-        Exception exception = assertThrows(RuntimeException.class,
-                () -> SleepTrackerApp.main(args));
-        assertTrue(exception.getCause() instanceof InvalidFilePathException);
-        assertEquals("В командной строке не указан путь к файлу",
-                exception.getCause().getMessage());
+        assertDoesNotThrow(() -> SleepTrackerApp.main(new String[]{}));
     }
 
-    // ============= ТЕСТЫ С РАЗНЫМИ ДАННЫМИ =============
     @Test
     void testWithNormalData() throws IOException {
         Path testFile = createTestFile(
@@ -245,26 +243,34 @@ class SleepTrackerAppTest {
         assertDoesNotThrow(() -> SleepTrackerApp.main(args));
     }
 
-    // ============= EDGE CASES =============
     @Test
     void testEdgeCase_InvalidFileFormat() throws IOException {
         Path testFile = createTestFile("invalid line without semicolons");
-        String[] args = {testFile.toString()};
-        assertThrows(Exception.class, () -> SleepTrackerApp.main(args));
+        SleepTrackerApp testApp = new SleepTrackerApp();
+        testApp.addFunction(new FileOpenAndUpload("Тест", testFile.toString())::apply);
+        assertThrows(Exception.class, () -> {
+            testApp.getListOfFunctions().get(0).apply(new ArrayList<>());
+        });
     }
 
     @Test
     void testEdgeCase_InvalidQuality() throws IOException {
         Path testFile = createTestFile("01.10.25 23:15;02.10.25 07:30;INVALID");
-        String[] args = {testFile.toString()};
-        assertThrows(Exception.class, () -> SleepTrackerApp.main(args));
+        SleepTrackerApp testApp = new SleepTrackerApp();
+        testApp.addFunction(new FileOpenAndUpload("Тест", testFile.toString())::apply);
+        assertThrows(Exception.class, () -> {
+            testApp.getListOfFunctions().get(0).apply(new ArrayList<>());
+        });
     }
 
     @Test
     void testEdgeCase_InvalidDateFormat() throws IOException {
         Path testFile = createTestFile("2025-10-01 23:15;2025-10-02 07:30;GOOD");
-        String[] args = {testFile.toString()};
-        assertThrows(Exception.class, () -> SleepTrackerApp.main(args));
+        SleepTrackerApp testApp = new SleepTrackerApp();
+        testApp.addFunction(new FileOpenAndUpload("Тест", testFile.toString())::apply);
+        assertThrows(Exception.class, () -> {
+            testApp.getListOfFunctions().get(0).apply(new ArrayList<>());
+        });
     }
 
     @Test
